@@ -1,4 +1,4 @@
-const express = require("express");
+import express, { Request, Response } from "express";
 const path = require("path");
 const router = express.Router();
 
