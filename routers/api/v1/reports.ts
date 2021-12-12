@@ -1,36 +1,63 @@
 import express, { Request, Response } from "express";
-const path = require("path");
-const fs = require("fs");
+import path from "path";
+import fs from "fs";
+import dayjs, { Dayjs } from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 const router = express.Router();
-const dayjs = require("dayjs");
-const utc = require("dayjs/plugin/utc");
-const timezone = require("dayjs/plugin/timezone");
 const filePath = path.join("db", "records", "reports.json");
 
-router.get("/", (req: Request, res: Response) => {
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
-  dayjs.tz.setDefault("Asia/Tokyo");
+interface IReport {
+  employee_id: number;
+  date: string;
+  condition_id: number;
+  reason: string;
+  keyDate: Dayjs;
+}
 
-  const { year, month } = req.query;
-  console.time("dayjs");
-  const json = (
-    JSON.parse(fs.readFileSync(filePath)) as {
-      employee_id: number;
-      condition_id: number;
-      date: string;
-      reason: string;
-    }[]
-  )
-    .map(o => ({
-      ...o,
-      keyDate: dayjs(o.date).tz(),
-    }))
-    .filter(o => Number(o.keyDate.format("YYYY")) === Number(year))
-    .filter(o => Number(o.keyDate.format("M")) === Number(month));
-  console.timeEnd("dayjs");
-
-  res.send(json);
+const addKyeDate = (report: IReport) => ({
+  ...report,
+  keyDate: dayjs(report.date).tz(),
 });
+
+router
+  .get("/", (req: Request, res: Response) => {
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    dayjs.tz.setDefault("Asia/Tokyo");
+
+    const { year, month } = req.query;
+    const buffer = fs.readFileSync(filePath);
+    const json = (JSON.parse(buffer.toString()) as IReport[])
+      .map(addKyeDate)
+      .filter(o => Number(o.keyDate.format("YYYY")) === Number(year))
+      .filter(o => Number(o.keyDate.format("M")) === Number(month));
+
+    res.send(json);
+  })
+  .post("/", (req: Request, res: Response) => {
+    const newReports = (req.body as IReport[]).map(addKyeDate);
+    const buffer = fs.readFileSync(filePath);
+    const json = (JSON.parse(buffer.toString()) as IReport[])
+      .map(addKyeDate)
+      .map(report => {
+        const newReport = newReports
+          .filter(o => o.employee_id === report.employee_id)
+          .filter(o => o.keyDate.isSame(report.keyDate))[0];
+        if (newReport) {
+          Object.assign(report, newReport);
+        }
+        return report;
+      })
+      .map(o => ({
+        employee_id: o.employee_id,
+        date: o.date,
+        condition_id: o.condition_id,
+        reason: o.reason,
+      }));
+
+    fs.writeFileSync(filePath, JSON.stringify(json));
+    res.send(json);
+  });
 
 module.exports = router;
