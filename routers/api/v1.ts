@@ -1,11 +1,13 @@
 import express from "express";
-const path = require("path");
+import conditions from "./v1/conditions";
+import employees from "./v1/employees";
+import holidays from "./v1/holidays";
+import reports from "./v1/reports";
+
 const router = express.Router();
+router.use("/conditions", conditions);
+router.use("/employees", employees);
+router.use("/holidays", holidays);
+router.use("/reports", reports);
 
-router.use("/conditions", require(path.join(__dirname, "v1", "conditions")));
-router.use("/employees", require(path.join(__dirname, "v1", "employees")));
-router.use("/holidays", require(path.join(__dirname, "v1", "holidays")));
-router.use("/reports", require(path.join(__dirname, "v1", "reports")));
-router.use("/report", require(path.join(__dirname, "v1", "report")));
-
-module.exports = router;
+export default router;

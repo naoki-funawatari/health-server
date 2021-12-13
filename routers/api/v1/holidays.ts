@@ -1,16 +1,18 @@
 import express, { Request, Response } from "express";
-const path = require("path");
-const fs = require("fs");
-const router = express.Router();
-const filePath = path.join("db", "master", "holidays.json");
+import path from "path";
+import { readFileSync } from "fs";
 
+const filePath = path.join("db", "master", "holidays.json");
+const router = express.Router();
 router.get("/", (req: Request, res: Response) => {
-  const json = JSON.parse(fs.readFileSync(filePath)) as {
+  const buffer = readFileSync(filePath);
+  const json = JSON.parse(buffer.toString()) as {
     id: number;
     date: string;
     name: string;
   }[];
+
   res.send(json);
 });
 
-module.exports = router;
+export default router;

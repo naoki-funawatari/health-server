@@ -1,11 +1,9 @@
 import express, { Request, Response } from "express";
 import path from "path";
-import fs from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-const router = express.Router();
-const filePath = path.join("db", "records", "reports.json");
 
 interface IReport {
   employee_id: number;
@@ -20,6 +18,8 @@ const addKyeDate = (report: IReport) => ({
   keyDate: dayjs(report.date).tz(),
 });
 
+const filePath = path.join("db", "records", "reports.json");
+const router = express.Router();
 router
   .get("/", (req: Request, res: Response) => {
     dayjs.extend(utc);
@@ -27,7 +27,7 @@ router
     dayjs.tz.setDefault("Asia/Tokyo");
 
     const { year, month } = req.query;
-    const buffer = fs.readFileSync(filePath);
+    const buffer = readFileSync(filePath);
     const json = (JSON.parse(buffer.toString()) as IReport[])
       .map(addKyeDate)
       .filter(o => Number(o.keyDate.format("YYYY")) === Number(year))
@@ -37,7 +37,7 @@ router
   })
   .post("/", (req: Request, res: Response) => {
     const newReports = (req.body as IReport[]).map(addKyeDate);
-    const buffer = fs.readFileSync(filePath);
+    const buffer = readFileSync(filePath);
     const json = (JSON.parse(buffer.toString()) as IReport[])
       .map(addKyeDate)
       .map(report => {
@@ -56,8 +56,8 @@ router
         reason: o.reason,
       }));
 
-    fs.writeFileSync(filePath, JSON.stringify(json));
+    writeFileSync(filePath, JSON.stringify(json));
     res.send(json);
   });
 
-module.exports = router;
+export default router;
