@@ -14,3 +14,8 @@ services:
       - CHOKIDAR_USEPOLLING=true
     restart: always
     tty: true
+    networks:
+      - health-networks
+networks:
+  health-networks:
+    external: true
