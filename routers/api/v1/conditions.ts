@@ -1,17 +1,21 @@
 import express, { Request, Response } from "express";
-import path from "path";
-import { readFileSync } from "fs";
+import { pool } from "../../../db/pool";
 
-const filePath = path.join("db", "master", "conditions.json");
+interface IConditions {
+  id: number;
+  name: string;
+}
+
 const router = express.Router();
-router.get("/", (req: Request, res: Response) => {
-  const buffer = readFileSync(filePath);
-  const json = JSON.parse(buffer.toString()) as {
-    id: number;
-    name: string;
-  }[];
-
-  res.send(json);
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    const client = await pool.connect();
+    const results = await client.query<IConditions>("SELECT * FROM conditions");
+    res.status(200).json(results.rows);
+  } catch (ex) {
+    console.log(ex);
+    res.status(400);
+  }
 });
 
 export default router;
