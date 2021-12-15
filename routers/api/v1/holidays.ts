@@ -1,11 +1,6 @@
 import express, { Request, Response } from "express";
-import { pool } from "../../../db/pool";
-
-interface IHolidays {
-  id: number;
-  date: string;
-  name: string;
-}
+import { pool } from "../../../index";
+import { IHolidays } from "../../../interfaces/interfaces";
 
 const router = express.Router();
 router.get("/", async (req: Request, res: Response) => {
@@ -13,6 +8,7 @@ router.get("/", async (req: Request, res: Response) => {
     const client = await pool.connect();
     const results = await client.query<IHolidays>("SELECT * FROM holidays");
     res.status(200).json(results.rows);
+    client.release();
   } catch (ex) {
     console.log(ex);
     res.status(400);

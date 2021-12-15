@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import api from "./routers/api";
+import { createPool } from "./db/pool";
+export const pool = createPool();
 
 const app = express();
 app.use(express.json());

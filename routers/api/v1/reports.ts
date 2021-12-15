@@ -1,25 +1,6 @@
 import express, { Request, Response } from "express";
-import dayjs, { Dayjs } from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import { pool } from "../../../db/pool";
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.tz.setDefault("Asia/Tokyo");
-
-interface IReport {
-  id: number;
-  employee_id: number;
-  date: string;
-  condition_id: number;
-  reason: string;
-  keyDate: Dayjs;
-}
-
-const addKyeDate = (report: IReport) => ({
-  ...report,
-  keyDate: dayjs(report.date).tz(),
-});
+import { pool } from "../../../index";
+import { IReport } from "../../../interfaces/interfaces";
 
 const router = express.Router();
 router
@@ -39,6 +20,7 @@ router
         values,
       });
       res.status(200).json(results.rows);
+      client.release();
     } catch (ex) {
       console.log(ex);
       res.status(400);
@@ -87,6 +69,7 @@ router
         values,
       });
       res.status(200).json(results.rows);
+      client.release();
       console.timeEnd("SELECT");
     } catch (ex) {
       console.log(ex);
