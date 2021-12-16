@@ -60,6 +60,31 @@ router
       console.log(ex);
       res.status(400);
     }
+  })
+  .post("/", async (req: Request, res: Response) => {
+    const { date, name }: { date: string; name: string } = req.body;
+
+    try {
+      const client = await pool.connect();
+      let text = `
+        INSERT INTO holidays (date, name)
+        VALUES ($1, $2)
+      `;
+      const values = [date, name];
+      await client.query({ text, values });
+
+      text = `
+        SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
+        FROM holidays
+        ORDER BY date
+      `;
+      const results = await client.query<IHolidays>({ text });
+      res.status(200).json(results.rows);
+      client.release();
+    } catch (ex) {
+      console.log(ex);
+      res.status(400);
+    }
   });
 
 export default router;

@@ -9,7 +9,7 @@ docker exec -it health-server /bin/bash
 
 apt update
 apt -y upgrade
-apt -y postgresql
+apt -y install postgresql
 
 psql -h health-db -U health -d healthes
 
