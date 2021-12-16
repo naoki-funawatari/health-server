@@ -15,10 +15,7 @@ router
           AND to_char(date, 'MM')   = $2
       `;
       const values = [year, month];
-      const results = await client.query<IReport>({
-        text,
-        values,
-      });
+      const results = await client.query<IReport>({ text, values });
       res.status(200).json(results.rows);
       client.release();
     } catch (ex) {
