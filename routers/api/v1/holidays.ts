@@ -70,15 +70,17 @@ router
         INSERT INTO holidays (date, name)
         VALUES ($1, $2)
       `;
-      const values = [date, name];
+      let values = [date, name];
       await client.query({ text, values });
 
       text = `
         SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
         FROM holidays
+        WHERE to_char(date, 'YYYY') = $1
         ORDER BY date
       `;
-      const results = await client.query<IHolidays>({ text });
+      values = [date.split("/")[0]];
+      const results = await client.query<IHolidays>({ text, values });
       res.status(200).json(results.rows);
       client.release();
     } catch (ex) {
