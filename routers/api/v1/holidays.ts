@@ -87,6 +87,30 @@ router
       console.log(ex);
       res.status(400);
     }
+  })
+  .delete("/:year/:id", async (req: Request, res: Response) => {
+    const { year, id } = req.params;
+
+    try {
+      const client = await pool.connect();
+      let text = `DELETE FROM holidays WHERE id = $1`;
+      let values = [id];
+      await client.query({ text, values });
+
+      text = `
+        SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
+        FROM holidays
+        WHERE to_char(date, 'YYYY') = $1
+        ORDER BY date
+      `;
+      values = [year];
+      const results = await client.query<IHolidays>({ text, values });
+      res.status(200).json(results.rows);
+      client.release();
+    } catch (ex) {
+      console.log(ex);
+      res.status(400);
+    }
   });
 
 export default router;
