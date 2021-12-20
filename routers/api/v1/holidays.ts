@@ -10,50 +10,9 @@ router
       const text = `
         SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
         FROM holidays
-        ORDER BY date
+        ORDER BY date, id
       `;
       const results = await client.query<IHolidays>({ text });
-      res.status(200).json(results.rows);
-      client.release();
-    } catch (ex) {
-      console.log(ex);
-      res.status(400);
-    }
-  })
-  .get("/:year", async (req: Request, res: Response) => {
-    const { year } = req.params;
-
-    try {
-      const client = await pool.connect();
-      const text = `
-        SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
-        FROM holidays
-        WHERE to_char(date, 'YYYY') = $1
-        ORDER BY date
-      `;
-      const values = [year];
-      const results = await client.query<IHolidays>({ text, values });
-      res.status(200).json(results.rows);
-      client.release();
-    } catch (ex) {
-      console.log(ex);
-      res.status(400);
-    }
-  })
-  .get("/:year/:month", async (req: Request, res: Response) => {
-    const { year, month } = req.params;
-
-    try {
-      const client = await pool.connect();
-      const text = `
-        SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
-        FROM holidays
-        WHERE to_char(date, 'YYYY') = $1
-          AND to_char(date, 'MM')   = $2
-        ORDER BY date
-      `;
-      const values = [year, month];
-      const results = await client.query<IHolidays>({ text, values });
       res.status(200).json(results.rows);
       client.release();
     } catch (ex) {
@@ -75,12 +34,10 @@ router
 
       text = `
         SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
-        FROM holidays
-        WHERE to_char(date, 'YYYY') = $1
-        ORDER BY date
+        FROM holidays 
+        ORDER BY date, id
       `;
-      values = [date.split("/")[0]];
-      const results = await client.query<IHolidays>({ text, values });
+      const results = await client.query<IHolidays>({ text });
       res.status(200).json(results.rows);
       client.release();
     } catch (ex) {
@@ -88,8 +45,8 @@ router
       res.status(400);
     }
   })
-  .delete("/:year/:id", async (req: Request, res: Response) => {
-    const { year, id } = req.params;
+  .delete("/:id", async (req: Request, res: Response) => {
+    const { id } = req.params;
 
     try {
       const client = await pool.connect();
@@ -100,11 +57,9 @@ router
       text = `
         SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
         FROM holidays
-        WHERE to_char(date, 'YYYY') = $1
-        ORDER BY date
+        ORDER BY date, id
       `;
-      values = [year];
-      const results = await client.query<IHolidays>({ text, values });
+      const results = await client.query<IHolidays>({ text });
       res.status(200).json(results.rows);
       client.release();
     } catch (ex) {
