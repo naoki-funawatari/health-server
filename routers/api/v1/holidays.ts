@@ -45,6 +45,34 @@ router
       res.status(400);
     }
   })
+  .patch("/:id", async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { data: name }: { data: string } = req.body;
+    console.log(name);
+
+    try {
+      const client = await pool.connect();
+      let text = `
+        UPDATE holidays
+        SET    name = $1
+        WHERE  id   = $2
+      `;
+      let values = [name, Number(id)];
+      await client.query({ text, values });
+
+      text = `
+        SELECT id, to_char(date, 'YYYY/MM/DD') as date, name
+        FROM holidays 
+        ORDER BY date, id
+      `;
+      const results = await client.query<IHolidays>({ text });
+      res.status(200).json(results.rows);
+      client.release();
+    } catch (ex) {
+      console.log(ex);
+      res.status(400);
+    }
+  })
   .delete("/:id", async (req: Request, res: Response) => {
     const { id } = req.params;
 
