@@ -6,7 +6,7 @@ services:
     container_name: health-server
     working_dir: /app
     volumes:
-      - /D/Projects/health-server:/app
+      - /C/Projects/health-server:/app
       - /node_modules
     ports:
       - 3001:3001
